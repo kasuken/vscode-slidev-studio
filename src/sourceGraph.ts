@@ -154,7 +154,7 @@ export async function buildDeckSourceGraph(
     const key = pathKey(actualPath);
     let markdown = parsedFiles.get(key);
     if (!markdown) {
-      const raw = options.entryMarkdown !== undefined && key === pathKey(resolve(deckPath))
+      const raw = options.entryMarkdown !== undefined && importer === undefined
         ? options.entryMarkdown
         : await readFile(actualPath, 'utf8');
       markdown = await parser.parse(raw, actualPath);

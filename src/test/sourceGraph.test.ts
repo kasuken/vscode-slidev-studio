@@ -1,12 +1,38 @@
 import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
-import { access, mkdtemp, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildDeckSourceGraph } from '../sourceGraph';
 import { duplicateLocalSlide, locateLocalSlideNotes, setLocalSlideLayout } from '../slideEdits';
 
 const fixtures = join(__dirname, '..', '..', 'test-fixtures');
+
+test('uses unsaved entry Markdown through a workspace symlink or junction without overriding imports', async () => {
+  const rootPath = await mkdtemp(join(tmpdir(), 'slidev-studio-workspace-alias-'));
+  try {
+    const workspacePath = join(rootPath, 'workspace');
+    const aliasPath = join(rootPath, 'alias');
+    await mkdir(workspacePath);
+    await writeFile(join(workspacePath, 'slides.md'), '# Saved cover');
+    await writeFile(join(workspacePath, 'shared.md'), '# Shared source');
+    await symlink(workspacePath, aliasPath, process.platform === 'win32' ? 'junction' : 'dir');
+    for (const slidevVersion of ['52.14.2', '53.0.0']) {
+      const graph = await buildDeckSourceGraph(join(aliasPath, 'slides.md'), aliasPath, {
+        slidevVersion,
+        entryMarkdown: '# Unsaved cover\n---\nsrc: ./shared.md\n---\n',
+      });
+      assert.deepEqual(graph.slides.map(slide => slide.title), ['Unsaved cover', 'Shared source']);
+      assert.equal(graph.slides[0]?.sourcePath, 'slides.md');
+      assert.equal(graph.slides[1]?.sourcePath, 'shared.md');
+      assert.equal(graph.slides[1]?.imported, true);
+      assert.equal(graph.diagnostics.length, 0);
+    }
+    assert.equal(await readFile(join(workspacePath, 'slides.md'), 'utf8'), '# Saved cover');
+  } finally {
+    await rm(rootPath, { recursive: true, force: true });
+  }
+});
 
 test('maps imported occurrences to their original source and provenance', async () => {
   const deckPath = join(fixtures, 'slides.md');

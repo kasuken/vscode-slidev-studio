@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import * as assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { SlidevPreviewSession } from '../preview';
 import { readInstalledSlidevVersion } from '../sourceGraph';
 
@@ -128,7 +128,7 @@ test('exports PNG slides into a new directory within the selected folder', async
 
     const outputDirectory = await session.exportDeck(rootPath, deckPath, rootPath, 'png');
 
-    assert.ok(outputDirectory.startsWith(rootPath));
+    assert.equal(dirname(outputDirectory), await realpath(rootPath));
     assert.deepEqual((await readdir(outputDirectory)).sort(), ['slide.png']);
   } finally {
     await session.stop();

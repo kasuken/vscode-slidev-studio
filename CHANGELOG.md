@@ -25,3 +25,8 @@ Initial public preview.
 - Only Slidev CLI 52.14.2 and 53.0.0 are supported for version-matched rendering.
 - Custom preparsers disable rendered thumbnails and source-to-preview synchronization.
 - Remote-host, screen-reader, zoom, and broad theme compatibility checks remain open.
+
+### Fixed
+
+- Preserve unsaved deck Markdown when a workspace is opened through a symlink
+  or Windows junction.
