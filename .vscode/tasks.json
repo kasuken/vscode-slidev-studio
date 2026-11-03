@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: compile",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "compile"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "windows": {
+        "command": "npm.cmd",
+        "options": {
+          "env": {
+            "PATH": "${env:LOCALAPPDATA}\\Programs\\nodejs;${env:PATH}"
+          }
+        }
+      },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": "$tsc"
+    }
+  ]
+}

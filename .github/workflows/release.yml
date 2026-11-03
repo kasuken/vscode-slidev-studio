@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish to the Visual Studio Marketplace
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify version and publishing credentials
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          PUBLISH: ${{ github.event_name == 'push' || inputs.publish }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$GITHUB_REF" == refs/tags/* && "${GITHUB_REF#refs/tags/}" != "v$VERSION" ]]; then
+            echo "::error::The release tag must match package.json (v$VERSION)."
+            exit 1
+          fi
+          if [[ "$PUBLISH" == "true" && -z "$VSCE_PAT" ]]; then
+            echo "::error::Configure the VSCE_PAT repository secret before publishing."
+            exit 1
+          fi
+      - run: npm run check
+      - run: npm test
+      - name: Run Extension Host tests
+        run: xvfb-run -a npm run test:host
+      - run: npm run package
+      - name: Upload installable extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: slidev-studio-vsix
+          path: "*.vsix"
+          if-no-files-found: error
+      - name: Publish to Visual Studio Marketplace
+        if: github.event_name == 'push' || inputs.publish
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          npx --no-install vsce publish --packagePath "vscode-slidev-studio-$VERSION.vsix"
+      - name: Create GitHub release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          gh release create "$GITHUB_REF_NAME" "vscode-slidev-studio-$VERSION.vsix" \
+            --verify-tag --title "Slidev Studio $VERSION" --generate-notes

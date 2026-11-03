@@ -1,0 +1,160 @@
+{
+  "name": "vscode-slidev-studio",
+  "displayName": "Slidev Studio",
+  "description": "A presentation-first workspace for Slidev decks.",
+  "version": "0.0.2",
+  "publisher": "emanuelebartolesi",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "author": "Emanuele Bartolesi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kasuken/vscode-slidev-studio.git"
+  },
+  "homepage": "https://github.com/kasuken/vscode-slidev-studio#readme",
+  "bugs": {
+    "url": "https://github.com/kasuken/vscode-slidev-studio/issues"
+  },
+  "sponsor": {
+    "url": "https://github.com/sponsors/kasuken"
+  },
+  "keywords": [
+    "slidev",
+    "slides",
+    "presentation",
+    "markdown",
+    "preview"
+  ],
+  "galleryBanner": {
+    "color": "#101827",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Deck discovery is available in Restricted Mode. Running the local Slidev server and rendering thumbnails requires workspace trust."
+    },
+    "virtualWorkspaces": {
+      "supported": false
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "slidevStudio.refresh",
+        "title": "Slidev Studio: Refresh Decks"
+      },
+      {
+        "command": "slidevStudio.selectDeck",
+        "title": "Slidev Studio: Select Deck"
+      },
+      {
+        "command": "slidevStudio.openSource",
+        "title": "Slidev Studio: Open Selected Deck Source"
+      },
+      {
+        "command": "slidevStudio.insertAsset",
+        "title": "Slidev Studio: Insert Image Into Selected Deck"
+      },
+      {
+        "command": "slidevStudio.setLayout",
+        "title": "Slidev Studio: Choose Slide Layout"
+      },
+      {
+        "command": "slidevStudio.startPreview",
+        "title": "Slidev Studio: Start Preview",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "slidevStudio.stopPreview",
+        "title": "Slidev Studio: Stop Preview",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "slidevStudio.present",
+        "title": "Slidev Studio: Present Selected Deck",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "slidevStudio.export",
+        "title": "Slidev Studio: Export Selected Deck",
+        "enablement": "isWorkspaceTrusted"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "slidevStudio",
+          "title": "Slidev Studio",
+          "icon": "media/studio.svg"
+        }
+      ]
+    },
+    "views": {
+      "slidevStudio": [
+        {
+          "type": "webview",
+          "id": "slidevStudio.decks",
+          "name": "Presentations"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Slidev Studio",
+      "properties": {
+        "slidevStudio.include": {
+          "type": "array",
+          "scope": "resource",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/slides*.md"
+          ],
+          "description": "Workspace-relative glob patterns for deck entry files. Matching files must start with YAML headmatter. Add explicit patterns for custom names; imported fragments are not separate decks unless matched."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -p . --watch",
+    "check": "tsc -p . --noEmit",
+    "build:parser52": "esbuild src/parser52Adapter.mts --bundle --platform=node --format=esm --external:yaml --outfile=dist/parser52Adapter.mjs",
+    "test": "npm run compile && npm run build:parser52 && node --test dist/test/*.test.js test/*.test.mjs",
+    "test:host": "npm run compile && npm run build:parser52 && node dist/host-test/runner.js",
+    "package": "vsce package",
+    "vscode:prepublish": "npm run compile && npm run build:parser52"
+  },
+  "dependencies": {
+    "@slidev/parser": "53.0.0",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "1.96.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.28.2",
+    "slidev-parser-52": "npm:@slidev/parser@52.14.2",
+    "typescript": "^5.7.0"
+  },
+  "overrides": {
+    "monaco-editor": {
+      "dompurify": "3.4.17"
+    }
+  }
+}

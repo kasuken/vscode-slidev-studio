@@ -1,0 +1,36 @@
+html, body, #app { background: #101827 !important; }
+.slidev-layout {
+  background: #101827;
+  color: #f4f8ff;
+}
+.slidev-layout h1 {
+  font-size: 56px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -2px;
+  color: #f4f8ff;
+}
+.slidev-layout.cover h1 { font-size: 64px; }
+.slidev-layout.cover p { opacity: 1; }
+.slidev-layout p {
+  color: #9baec7;
+  opacity: 1;
+  font-size: 23px;
+  line-height: 1.5;
+}
+.slidev-layout li { color: #b9c8dc; }
+.slidev-layout h3 { color: #5de4c7; }
+.eyebrow {
+  color: #5de4c7;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 28px;
+}
+.footer-label {
+  position: absolute;
+  bottom: 42px;
+  color: #5de4c7;
+  font-size: 12px;
+  letter-spacing: 3px;
+}
